@@ -1,0 +1,3409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="preconnect" href="https://fontsapi.zeoseven.com" crossorigin />
+  <link rel="preconnect" href="https://fontsapi-storage.zeoseven.com" crossorigin />
+  <title>吱吱的剧笺手札</title>
+
+  <style>
+    @import url("https://fontsapi.zeoseven.com/441/main/result.css");
+    @import url("https://fontsapi.zeoseven.com/646/main/result.css");
+
+    :root {
+      --app-height: 100vh;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+      --home-bg: url('./assets/1.png');
+      --detail-bg: url('./assets/2.png');
+      --asset-hole-paper: url('./assets/3.png');
+      --asset-paper: url('./assets/4.png');
+      --asset-tape-long: url('./assets/5.png');
+      --asset-tape-short: url('./assets/6.png');
+      --asset-hand-blue: url('./assets/7.png');
+      --asset-hand-gray: url('./assets/8.png');
+      --asset-note-long: url('./assets/9.png');
+      --asset-note-short: url('./assets/10.png');
+
+      --font-title: "JiangChengJieXingTi", "JiangChengJieXingTi-Regular", "Kaiti SC", "STKaiti", "Songti SC", "Noto Serif SC", "STSong", "SimSun", serif;
+      --font-body: "XiangcuiDengcusong", "XiangcuiDengcusong-Regular", "Songti SC", "Noto Serif SC", "STSong", "SimSun", serif;
+      --font-ui: "XiangcuiDengcusong", "XiangcuiDengcusong-Regular", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
+      --ink: #222427;
+      --muted: #7d858e;
+      --soft-ink: rgba(34, 36, 39, 0.70);
+      --blue: #86abc3;
+      --blue-deep: #5f8ba6;
+      --paper-solid: #fbfbf8;
+      --line: rgba(73, 95, 113, 0.16);
+      --shadow: 0 18px 48px rgba(45, 57, 68, 0.14);
+      --small-shadow: 0 10px 24px rgba(48, 56, 64, 0.11);
+      --ease: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    @supports (height: 100svh) {
+      :root { --app-height: 100svh; }
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-weight: normal;
+      background: #eef3f5;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: var(--app-height);
+      display: grid;
+      place-items: center;
+      padding: clamp(10px, 2vw, 28px);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+      color: inherit;
+      -webkit-font-smoothing: inherit;
+    }
+
+    button,
+    input,
+    textarea {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .app {
+      width: min(96vw, 1200px);
+      aspect-ratio: 4 / 3;
+      position: relative;
+      overflow: hidden;
+      border-radius: clamp(18px, 2.2vw, 32px);
+      background-image: var(--home-bg);
+      background-size: cover;
+      background-position: center;
+      box-shadow: var(--shadow);
+      transition: background-image 560ms var(--ease);
+      isolation: isolate;
+      background-color: #eef3f5;
+      transform: translateZ(0);
+    }
+
+    .app.is-detail {
+      background-image: var(--detail-bg);
+    }
+
+    .app::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(circle at 12% 20%, rgba(255, 255, 255, 0.42), transparent 26%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03));
+      pointer-events: none;
+    }
+
+    .geo-bg {
+      position: absolute;
+      inset: -20%;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.32;
+      background:
+        linear-gradient(135deg, transparent 0 18%, rgba(132, 171, 195, 0.12) 18% 18.8%, transparent 18.8% 42%, rgba(255,255,255,0.28) 42% 42.6%, transparent 42.6% 100%),
+        linear-gradient(135deg, transparent 0 58%, rgba(132, 171, 195, 0.10) 58% 58.8%, transparent 58.8% 100%);
+      transform: translate3d(-2%, -2%, 0) rotate(0deg);
+      animation: driftGeometry 18s linear infinite alternate;
+      mix-blend-mode: multiply;
+    }
+
+    @keyframes driftGeometry {
+      from { transform: translate3d(-2%, -2%, 0) rotate(0deg); }
+      to { transform: translate3d(2%, 2%, 0) rotate(0.6deg); }
+    }
+
+    .decor-layer,
+    .view {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .view {
+      z-index: 4;
+      padding: clamp(30px, 4.2vw, 58px) clamp(28px, 5vw, 74px);
+      transition: opacity 520ms var(--ease), transform 680ms var(--ease), filter 520ms var(--ease);
+    }
+
+    .detail-view {
+      padding: clamp(54px, 6.4vw, 78px) clamp(150px, 16vw, 210px) clamp(54px, 6.6vw, 74px);
+    }
+
+    .home-view,
+    .detail-view {
+      pointer-events: none;
+    }
+
+    .home-view.is-active,
+    .detail-view.is-active {
+      pointer-events: auto;
+    }
+
+    .detail-view {
+      opacity: 0;
+      transform: translateY(26px) scale(0.985);
+      filter: blur(6px);
+    }
+
+    .app.is-detail .home-view {
+      opacity: 0;
+      transform: translateY(-22px) scale(0.985);
+      filter: blur(5px);
+    }
+
+    .app.is-detail .detail-view {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+
+    .asset {
+      position: absolute;
+      z-index: 3;
+      pointer-events: none;
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+      transition: transform 780ms var(--ease), opacity 620ms var(--ease), filter 620ms var(--ease);
+      will-change: transform, opacity;
+    }
+
+    .asset.hole-paper {
+      top: -3.5%;
+      left: 7%;
+      width: clamp(420px, 48%, 570px);
+      height: 13%;
+      background-image: var(--asset-hole-paper);
+      transform: rotate(-4deg);
+      opacity: 0.58;
+    }
+
+    .asset.hand-gray {
+      top: 2.2%;
+      left: -4%;
+      width: clamp(300px, 38%, 460px);
+      height: 16%;
+      background-image: var(--asset-hand-gray);
+      opacity: 0.36;
+      transform: rotate(-5deg);
+    }
+
+    .asset.hand-blue {
+      right: 2.5%;
+      bottom: 12%;
+      width: clamp(330px, 42%, 500px);
+      height: 18%;
+      background-image: var(--asset-hand-blue);
+      opacity: 0.60;
+      transform: rotate(-5deg);
+    }
+
+    .asset.tape-long {
+      right: 18%;
+      top: 11%;
+      width: clamp(150px, 21%, 252px);
+      height: 7.35%;
+      background-image: var(--asset-tape-long);
+      transform: rotate(-7deg);
+      opacity: 0.62;
+    }
+
+    .asset.tape-short {
+      left: 7%;
+      bottom: 22%;
+      width: clamp(72px, 9.45%, 114px);
+      height: 6.3%;
+      background-image: var(--asset-tape-short);
+      transform: rotate(84deg);
+      opacity: 0.56;
+    }
+
+    .asset.note-long {
+      left: 50%;
+      top: 19%;
+      width: clamp(260px, 28%, 336px);
+      height: 8%;
+      background-image: var(--asset-note-long);
+      transform: translateX(-50%) rotate(-2deg);
+      opacity: 0.44;
+    }
+
+    .app.is-detail .asset.hole-paper,
+    .app.is-detail .asset.hand-gray,
+    .app.is-detail .asset.tape-long,
+    .app.is-detail .asset.note-long {
+      transform: translateY(-48px) rotate(-5deg);
+      opacity: 0.16;
+      filter: blur(1.2px);
+    }
+
+    .app.is-detail .asset.hand-blue,
+    .app.is-detail .asset.tape-short {
+      transform: translateY(52px) rotate(-7deg);
+      opacity: 0.18;
+      filter: blur(1.2px);
+    }
+
+    .topbar {
+      position: absolute;
+      z-index: 30;
+      top: clamp(16px, 2.1vw, 28px);
+      right: clamp(18px, 2.4vw, 34px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .text-btn,
+    .icon-btn {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.62);
+      color: var(--ink);
+      border-radius: 999px;
+      box-shadow: 0 8px 18px rgba(35, 48, 58, 0.09);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      transition: transform 200ms ease, background 220ms ease, border-color 220ms ease;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+
+    .text-btn:hover,
+    .icon-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.80);
+    }
+
+    .text-btn {
+      padding: 0 14px;
+    }
+
+    .icon-action-btn {
+      width: 38px;
+      height: 38px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.64);
+      color: var(--blue-deep);
+      box-shadow: 0 8px 18px rgba(35, 48, 58, 0.09);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      transition: transform 200ms ease, background 220ms ease, border-color 220ms ease;
+    }
+
+    .icon-action-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.85;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .icon-action-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .home-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .home-center {
+      position: absolute;
+      left: 50%;
+      top: 30.6%;
+      z-index: 5;
+      width: min(760px, 88%);
+      transform: translate(-50%, -50%);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      animation: homeIntro 820ms var(--ease) both;
+    }
+
+    @keyframes homeIntro {
+      from {
+        opacity: 0;
+        transform: translate(-50%, calc(-50% + 18px)) scale(0.985);
+        filter: blur(5px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    .kicker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--blue-deep);
+      font-family: var(--font-ui);
+      font-size: clamp(10px, 0.9vw, 12px);
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+    }
+
+    .kicker::before,
+    .kicker::after {
+      content: "";
+      width: 42px;
+      height: 1px;
+      background: currentColor;
+      opacity: 0.64;
+    }
+
+    .main-title {
+      min-width: 8ch;
+      margin: 0;
+      font-family: var(--font-title);
+      font-size: clamp(34px, min(6.2vw, 8.4vh), 82px);
+      line-height: 1.05;
+      font-weight: normal;
+      letter-spacing: 0.04em;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.42);
+      outline: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .intro {
+      max-width: 560px;
+      margin: 22px auto 10px;
+      color: var(--soft-ink);
+      font-size: clamp(12px, min(1.35vw, 2.3vh), 17px);
+      line-height: 1.85;
+      letter-spacing: 0.05em;
+      outline: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .home-actions {
+      position: absolute;
+      bottom: clamp(16px, 2.5vw, 26px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+
+    .add-btn {
+      position: relative;
+      min-width: min(82vw, 390px);
+      min-height: clamp(38px, 5vh, 48px);
+      padding: 0 clamp(18px, 2.5vw, 30px);
+      border-radius: 999px;
+      color: var(--blue-deep);
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid rgba(95, 139, 166, 0.24);
+      box-shadow: 0 12px 30px rgba(52, 75, 90, 0.11);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      font-size: clamp(12px, min(1.18vw, 2.2vh), 15px);
+      letter-spacing: 0.14em;
+      white-space: nowrap;
+      transition: transform 220ms var(--ease), box-shadow 220ms ease, background 220ms ease;
+    }
+
+    .add-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 36px rgba(52, 75, 90, 0.16);
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .add-btn::before,
+    .add-btn::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 8vw;
+      max-width: 92px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent);
+      opacity: 0.7;
+    }
+
+    .add-btn::before { right: calc(100% + 14px); }
+    .add-btn::after { left: calc(100% + 14px); }
+
+    .add-symbol {
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+      border-radius: 50%;
+      background: rgba(95, 139, 166, 0.16);
+      font-family: var(--font-ui);
+      font-size: 18px;
+      vertical-align: -2px;
+    }
+
+    .module-area {
+      position: absolute;
+      left: clamp(28px, 5vw, 74px);
+      right: clamp(28px, 5vw, 74px);
+      bottom: clamp(112px, 12vw, 168px);
+      z-index: 1;
+      height: min(27.5%, 210px);
+      min-height: 0;
+      padding: 4px 4px 12px;
+      overflow: hidden;
+      animation: cardAreaIn 900ms var(--ease) 240ms both;
+    }
+
+    @keyframes cardAreaIn {
+      from { opacity: 0; transform: translateY(28px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .module-scroll {
+      height: 100%;
+      overflow: auto;
+      padding: 8px 8px 18px 2px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(95, 139, 166, 0.44) transparent;
+    }
+
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(12px, 1.65vw, 22px);
+      align-content: start;
+    }
+
+    .scene-card {
+      position: relative;
+      z-index: 10;
+      min-height: clamp(112px, 14vw, 136px);
+      padding: clamp(14px, 1.8vw, 23px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      text-align: left;
+      border: 1px solid rgba(102, 122, 138, 0.12);
+      border-radius: 3px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.58)),
+        var(--asset-paper) center / 120% 120% no-repeat;
+      box-shadow: var(--small-shadow);
+      transform-origin: center;
+      transition: transform 240ms var(--ease), box-shadow 240ms var(--ease), filter 240ms ease;
+      isolation: isolate;
+      pointer-events: auto;
+    }
+
+    .scene-card:hover {
+      transform: translateY(-5px) rotate(-0.5deg);
+      box-shadow: 0 18px 38px rgba(44, 57, 68, 0.16);
+    }
+
+    .scene-card::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -16px;
+      width: 46.2%;
+      height: 42px;
+      transform: translateX(-50%) rotate(-3deg);
+      background: var(--asset-tape-short) center / contain no-repeat;
+      opacity: 0.55;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .scene-card::after {
+      content: attr(data-count);
+      position: absolute;
+      right: 18px;
+      bottom: 16px;
+      color: rgba(95, 139, 166, 0.28);
+      font-family: var(--font-ui);
+      font-size: clamp(30px, 4vw, 46px);
+      font-weight: normal;
+      letter-spacing: -0.08em;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .scene-card > * {
+      position: relative;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .scene-meta-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 11px;
+      color: var(--blue-deep);
+      font-family: var(--font-ui);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .scene-card h2 {
+      margin: 0 0 10px;
+      font-family: var(--font-title);
+      font-size: clamp(20px, 2.2vw, 30px);
+      line-height: 1.25;
+      font-weight: normal;
+      letter-spacing: 0.05em;
+    }
+
+    .scene-card p {
+      margin: 0;
+      color: var(--soft-ink);
+      font-size: clamp(12px, min(1.18vw, 2.2vh), 15px);
+      line-height: 1.75;
+      letter-spacing: 0.035em;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
+
+    .detail-shell {
+      width: 100%;
+      max-width: 720px;
+      height: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: clamp(8px, 1.2vw, 14px);
+      position: relative;
+    }
+
+    .detail-header {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 14px;
+      padding-right: 0;
+    }
+
+    .back-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid var(--line);
+      box-shadow: var(--small-shadow);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      color: var(--blue-deep);
+      font-size: 20px;
+    }
+
+    .detail-label {
+      justify-self: start;
+      min-height: 38px;
+      padding: 9px 20px;
+      background: var(--asset-note-long) center / 100% 100% no-repeat;
+      color: var(--blue-deep);
+      font-family: var(--font-ui);
+      font-size: clamp(11px, 0.98vw, 13px);
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    .status {
+      display: none;
+    }
+
+    .editor-card {
+      min-height: 0;
+      position: relative;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: clamp(12px, 1.45vw, 18px);
+      padding: clamp(24px, 3.2vw, 42px);
+      border: 1px solid rgba(102, 122, 138, 0.12);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.58)),
+        var(--asset-paper) center / 100% 100% no-repeat;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .editor-card::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -22px;
+      width: min(360px, 40%);
+      height: 64px;
+      transform: translateX(-50%) rotate(-2deg);
+      background: var(--asset-tape-long) center / contain no-repeat;
+      opacity: 0.38;
+      pointer-events: none;
+    }
+
+    .editor-top {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr minmax(170px, 22%);
+      gap: clamp(14px, 2vw, 24px);
+      align-items: start;
+      z-index: 1;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--blue-deep);
+      font-family: var(--font-ui);
+      font-size: 11px;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+    }
+
+    .input,
+    .textarea {
+      width: 100%;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--ink);
+      resize: none;
+    }
+
+    .title-input {
+      min-height: 56px;
+      font-family: var(--font-title);
+      font-size: clamp(32px, 4.2vw, 62px);
+      line-height: 1.15;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .meta-panel {
+      display: grid;
+      gap: 10px;
+      padding-top: 7px;
+    }
+
+    .meta-input {
+      min-height: 34px;
+      padding: 0 2px 7px;
+      border-bottom: 1px solid var(--line);
+      color: var(--soft-ink);
+      font-size: 13px;
+      letter-spacing: 0.05em;
+    }
+
+    .body-wrap {
+      position: relative;
+      min-height: 0;
+      z-index: 1;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 10px;
+    }
+
+    .summary-input {
+      min-height: 54px;
+      line-height: 1.7;
+      color: var(--soft-ink);
+      font-size: clamp(13px, 1.12vw, 15px);
+      padding: 4px clamp(6px, 0.8vw, 12px) 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .scroll-editor {
+      min-height: 0;
+      overflow: hidden;
+      border-radius: 10px;
+      border: 1px solid rgba(104, 130, 148, 0.10);
+      background:
+        repeating-linear-gradient(0deg, transparent 0, transparent 35px, rgba(95, 139, 166, 0.10) 36px),
+        rgba(255, 255, 255, 0.18);
+    }
+
+    .body-input {
+      height: 100%;
+      min-height: 220px;
+      overflow: auto;
+      padding: 14px clamp(16px, 2vw, 24px) 22px;
+      -webkit-overflow-scrolling: touch;
+      line-height: 1.85;
+      font-size: clamp(13px, 1.12vw, 16px);
+      letter-spacing: 0.045em;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(95, 139, 166, 0.50) transparent;
+    }
+
+    .detail-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      min-height: 38px;
+      padding: 0 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid var(--line);
+      color: var(--blue-deep);
+      box-shadow: 0 8px 18px rgba(35, 48, 58, 0.08);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      transition: transform 200ms var(--ease), background 200ms ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.80);
+    }
+
+    .danger {
+      color: #a96d6d;
+    }
+
+
+
+    .copy-btn {
+      color: var(--ink);
+    }
+
+    .editor-top,
+    .body-wrap {
+      padding-inline: clamp(4px, 0.8vw, 12px);
+    }
+
+    .save-modal {
+      position: absolute;
+      inset: 0;
+      z-index: 60;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(238, 243, 245, 0.34);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease;
+    }
+
+    .save-modal.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: min(420px, 92vw);
+      padding: 28px 28px 24px;
+      border: 1px solid rgba(95, 139, 166, 0.22);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 24px 64px rgba(44, 57, 68, 0.22);
+      text-align: center;
+      transform: translateY(12px) scale(0.98);
+      transition: transform 220ms var(--ease);
+    }
+
+    .save-modal.show .modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-title {
+      margin: 0 0 18px;
+      font-family: var(--font-title);
+      font-size: clamp(28px, 3vw, 40px);
+      font-weight: normal;
+      letter-spacing: 0.06em;
+    }
+
+    .modal-text {
+      margin: 12px auto 20px;
+      color: var(--soft-ink);
+      font-size: 15px;
+      line-height: 1.8;
+      letter-spacing: 0.05em;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .modal-actions .action-btn {
+      min-width: 96px;
+    }
+
+
+    .hidden-file {
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .toast {
+      position: absolute;
+      z-index: 40;
+      left: 50%;
+      bottom: clamp(18px, 2.5vw, 30px);
+      transform: translate(-50%, 16px);
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid var(--line);
+      color: var(--blue-deep);
+      box-shadow: var(--small-shadow);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 240ms ease, transform 240ms ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    /* PC端专属：flex布局让标题与小剧场模块紧凑相连，消除大屏空隙 */
+    @media (min-width: 901px) {
+      .home-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding-bottom: clamp(72px, 9vw, 116px);
+      }
+
+      .home-center {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: translateY(0);
+        animation: homeIntroDesktop 820ms var(--ease) both;
+        flex-shrink: 0;
+      }
+
+      @keyframes homeIntroDesktop {
+        from {
+          opacity: 0;
+          transform: translateY(18px) scale(0.985);
+          filter: blur(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+          filter: blur(0);
+        }
+      }
+
+      .module-area {
+        position: relative;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        width: min(calc(100% - clamp(56px, 10vw, 148px)), 1060px);
+        height: min(27.5vh, 210px);
+        margin-top: clamp(14px, 1.8vw, 26px);
+        flex-shrink: 0;
+      }
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 0;
+        place-items: stretch;
+      }
+
+      .app {
+        width: 100vw;
+        min-height: 100dvh;
+        aspect-ratio: auto;
+        border-radius: 0;
+        background-position: center top;
+      }
+
+      .view {
+        padding: 76px 18px 28px;
+      }
+
+      .detail-view {
+        padding: 68px 38px 32px;
+      }
+
+      .detail-shell {
+        max-width: none;
+      }
+
+      .topbar {
+        top: 14px;
+        right: 14px;
+        gap: 6px;
+      }
+
+      .text-btn {
+        padding: 0 12px;
+        min-height: 34px;
+      }
+
+      /* 移动端布局调整 */
+      .home-center {
+        width: min(420px, 90vw);
+        top: 28.8%;
+      }
+
+      .main-title {
+        font-size: clamp(32px, min(13vw, 8.2vh), 60px);
+      }
+
+      .intro {
+        max-width: 92%;
+      }
+
+      .home-actions {
+        bottom: clamp(18px, 3vw, 24px);
+      }
+
+      .add-btn {
+        min-width: min(86vw, 360px);
+      }
+
+      .add-btn::before,
+      .add-btn::after {
+        width: 28px;
+      }
+
+      .module-area {
+        left: 18px;
+        right: 18px;
+        width: auto;
+        margin-top: 0;
+        bottom: clamp(102px, 15vw, 132px);
+        height: min(31%, 32dvh);
+        min-height: min(230px, 32dvh);
+      }
+
+      .module-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding-bottom: 18px;
+      }
+
+      .scene-card {
+        min-height: 150px;
+      }
+
+      .asset.hole-paper {
+        width: 86vw;
+        max-width: none;
+        top: -2%;
+        left: -9%;
+      }
+
+      .asset.hand-gray {
+        width: 78vw;
+        max-width: none;
+        left: -22%;
+        top: 4%;
+        opacity: 0.22;
+      }
+
+      .asset.hand-blue {
+        width: 80vw;
+        max-width: none;
+        right: -18%;
+        bottom: 6%;
+        opacity: 0.34;
+      }
+
+      .asset.tape-long {
+        width: 35vw;
+        max-width: none;
+        right: 12%;
+        top: 15%;
+      }
+
+      .asset.tape-short {
+        width: 19vw;
+        max-width: none;
+        left: 2%;
+        bottom: 26%;
+      }
+
+      .asset.note-long {
+        display: none;
+      }
+
+      .detail-header {
+        grid-template-columns: auto 1fr;
+        padding-right: 0;
+      }
+
+      .detail-label {
+        display: none;
+      }
+
+      .editor-card {
+        padding: 24px 20px;
+      }
+
+      .editor-top {
+        grid-template-columns: 1fr;
+      }
+
+      .meta-panel {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .title-input {
+        font-size: clamp(34px, 11vw, 48px);
+      }
+
+      .body-input {
+        min-height: 45dvh;
+      }
+
+      .detail-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .icon-action-btn {
+        width: 34px;
+        height: 34px;
+      }
+
+      .icon-action-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .home-center {
+        top: 27.8%;
+      }
+
+      .module-area {
+        bottom: clamp(92px, 17vw, 118px);
+        height: min(34%, 32dvh);
+        min-height: min(230px, 32dvh);
+      }
+
+      .home-actions {
+        bottom: clamp(12px, 2.5vw, 20px);
+      }
+
+      .meta-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .body-input {
+        min-height: 50dvh;
+      }
+
+      .modal-card {
+        padding: 24px 20px 20px;
+      }
+    }
+
+    @media (max-height: 720px) {
+      .home-center {
+        top: 27%;
+        width: min(680px, 86%);
+      }
+
+      .kicker {
+        margin-bottom: 4px;
+        font-size: 10px;
+        letter-spacing: 0.28em;
+      }
+
+      .kicker::before,
+      .kicker::after {
+        width: 28px;
+      }
+
+      .main-title {
+        font-size: clamp(30px, min(5.5vw, 7.2vh), 64px);
+        line-height: 1;
+      }
+
+      .intro {
+        margin: 8px auto 10px;
+        font-size: clamp(12px, min(1.15vw, 2vh), 15px);
+        line-height: 1.55;
+      }
+
+      .home-actions {
+        bottom: 12px;
+      }
+
+      .add-btn {
+        min-height: 38px;
+        padding-inline: 20px;
+      }
+
+
+      .module-area {
+        bottom: clamp(82px, 12vh, 106px);
+        height: min(24%, 145px);
+        min-height: 78px;
+      }
+
+      .scene-card {
+        min-height: 100px;
+        padding: 12px 14px;
+      }
+
+      .scene-card p {
+        -webkit-line-clamp: 2;
+        line-height: 1.55;
+      }
+    }
+
+    @media (max-height: 560px) {
+      .kicker {
+        display: none;
+      }
+
+      .home-center {
+        top: 24.2%;
+      }
+
+      .main-title {
+        font-size: clamp(26px, min(5vw, 6.7vh), 52px);
+      }
+
+      .intro {
+        margin: 6px auto 8px;
+        line-height: 1.35;
+      }
+
+      .module-area {
+        bottom: 68px;
+        height: min(22%, 110px);
+        min-height: 64px;
+      }
+
+      .add-btn {
+        min-height: 34px;
+        font-size: 12px;
+      }
+
+      .scene-card {
+        min-height: 82px;
+      }
+    }
+
+    @media (max-width: 520px) and (max-height: 740px) {
+      .home-center {
+        top: 25.8%;
+      }
+
+      .module-area {
+        bottom: 84px;
+        height: min(30%, 30dvh);
+        min-height: min(190px, 30dvh);
+      }
+
+      .add-btn {
+        min-width: min(88vw, 330px);
+        padding-inline: 16px;
+        letter-spacing: 0.08em;
+      }
+    }
+
+
+    /* 手机端与 iOS Safari 的最终覆盖：避免 100vh 顶底栏误差，并把首页内容整体上移、加大卡片滚动区 */
+    @media (max-width: 900px) {
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        min-height: var(--app-height);
+      }
+
+      .app {
+        height: var(--app-height);
+        min-height: var(--app-height);
+        overflow: hidden;
+      }
+
+      .view {
+        padding-top: calc(var(--safe-top) + 62px);
+        padding-bottom: calc(var(--safe-bottom) + 24px);
+      }
+
+      .home-center {
+        top: clamp(112px, 19svh, 168px);
+        width: min(420px, 92vw);
+      }
+
+      .module-area {
+        top: clamp(238px, 34svh, 306px);
+        bottom: calc(var(--safe-bottom) + 76px);
+        height: auto;
+        min-height: 0;
+      }
+
+      .module-scroll {
+        height: 100%;
+        padding-bottom: 28px;
+      }
+
+      .home-actions {
+        bottom: calc(var(--safe-bottom) + 16px);
+      }
+
+      .add-btn {
+        min-height: 42px;
+      }
+
+      .input,
+      .textarea {
+        font-size: max(16px, 1em);
+      }
+
+      .detail-view {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .detail-actions {
+        padding-bottom: calc(var(--safe-bottom) + 2px);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .home-center {
+        top: clamp(102px, 18svh, 148px);
+      }
+
+      .kicker {
+        margin-bottom: 5px;
+      }
+
+      .intro {
+        margin: 8px auto 10px;
+        line-height: 1.55;
+      }
+
+      .module-area {
+        top: clamp(218px, 32svh, 272px);
+        bottom: calc(var(--safe-bottom) + 68px);
+        height: auto;
+        min-height: 0;
+      }
+
+      .scene-card {
+        min-height: 136px;
+      }
+
+      .add-btn {
+        min-width: min(88vw, 340px);
+      }
+    }
+
+    @media (max-width: 520px) and (max-height: 740px) {
+      .home-center {
+        top: clamp(92px, 17svh, 126px);
+      }
+
+      .module-area {
+        top: clamp(190px, 30svh, 230px);
+        bottom: calc(var(--safe-bottom) + 62px);
+        height: auto;
+        min-height: 0;
+      }
+
+      .scene-card {
+        min-height: 118px;
+      }
+    }
+
+    @supports (-webkit-touch-callout: none) {
+      .app,
+      .view,
+      .scene-card,
+      .editor-card,
+      .asset {
+        -webkit-transform: translateZ(0);
+      }
+
+      .app {
+        min-height: var(--app-height);
+      }
+
+      .app::before {
+        -webkit-transform: translateZ(0);
+      }
+
+      .text-btn,
+      .icon-action-btn,
+      .add-btn,
+      .back-btn,
+      .action-btn,
+      .toast,
+      .save-modal {
+        -webkit-backdrop-filter: blur(10px);
+      }
+    }
+
+    /* 远程图片被 iOS/HTTPS 混合内容拦截时，保留可读的纸感底色，而不是空白。 */
+    .app.assets-fallback {
+      background-image:
+        radial-gradient(circle at 16% 20%, rgba(255,255,255,0.68), transparent 28%),
+        linear-gradient(135deg, #edf4f6 0%, #f8faf8 52%, #dce8ee 100%);
+    }
+
+    .app.assets-fallback.is-detail {
+      background-image:
+        radial-gradient(circle at 82% 16%, rgba(255,255,255,0.62), transparent 25%),
+        linear-gradient(135deg, #edf4f6 0%, #f8faf8 58%, #dde9ef 100%);
+    }
+
+    .app.assets-fallback .asset {
+      opacity: 0.10;
+      background-image: none;
+      background-color: rgba(95, 139, 166, 0.16);
+      border-radius: 999px;
+      filter: blur(0.2px);
+    }
+
+
+    /* === iOS moduleGrid 可见性热修复 ===
+       目的：旧版 iOS Safari 不支持 CSS Grid / svh / dvh / min() / clamp() 时，
+       moduleGrid 仍然能以普通块级列表显示，不再被高度计算压成 0。 */
+    .module-grid {
+      display: block;
+    }
+
+    .module-grid > .scene-card {
+      width: 100%;
+      margin: 0 0 16px;
+    }
+
+    @supports (display: grid) {
+      @media (min-width: 901px) {
+        .module-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: clamp(12px, 1.65vw, 22px);
+        }
+
+        .module-grid > .scene-card {
+          width: auto;
+          margin: 0;
+        }
+      }
+    }
+
+    @media (max-width: 900px) {
+      .app,
+      .app.module-rescue {
+        height: 100vh;
+        min-height: 100vh;
+        height: var(--app-height);
+        min-height: var(--app-height);
+      }
+
+      .home-center {
+        top: 80px;
+        top: clamp(76px, 14vh, 130px);
+      }
+
+      .module-area,
+      .app.module-rescue .module-area {
+        display: block;
+        visibility: visible;
+        opacity: 1;
+        z-index: 12;
+        left: 18px;
+        right: 18px;
+        top: 216px;
+        bottom: 76px;
+        bottom: calc(var(--safe-bottom) + 76px);
+        height: auto;
+        min-height: 150px;
+        transform: translateZ(0);
+        animation: none;
+      }
+
+      .module-scroll,
+      .app.module-rescue .module-scroll {
+        display: block;
+        height: 100%;
+        min-height: 150px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .module-grid,
+      .app.module-rescue .module-grid {
+        display: block;
+        min-height: 120px;
+      }
+
+      .module-grid > .scene-card,
+      .app.module-rescue .module-grid > .scene-card {
+        display: flex;
+        width: 100%;
+        min-height: 136px;
+        margin: 0 0 14px;
+        visibility: visible;
+        opacity: 1;
+        transform: translateZ(0);
+      }
+    }
+
+    @supports (top: 1svh) {
+      @media (max-width: 900px) {
+        .home-center {
+          top: clamp(76px, 12svh, 130px);
+        }
+
+        .module-area,
+        .app.module-rescue .module-area {
+          top: clamp(200px, 29svh, 260px);
+        }
+      }
+    }
+
+    @media (max-width: 520px) {
+      .home-center {
+        top: 70px;
+        top: clamp(66px, 12vh, 98px);
+      }
+
+      .module-area,
+      .app.module-rescue .module-area {
+        top: 190px;
+        bottom: 68px;
+        bottom: calc(var(--safe-bottom) + 68px);
+        min-height: 180px;
+      }
+
+      .module-scroll,
+      .app.module-rescue .module-scroll {
+        min-height: 180px;
+      }
+
+      .module-grid > .scene-card,
+      .app.module-rescue .module-grid > .scene-card {
+        min-height: 128px;
+      }
+    }
+
+    @supports (top: 1svh) {
+      @media (max-width: 520px) {
+        .home-center {
+          top: clamp(66px, 12svh, 98px);
+        }
+
+        .module-area,
+        .app.module-rescue .module-area {
+          top: clamp(180px, 28svh, 228px);
+        }
+      }
+    }
+
+    @media (max-width: 520px) and (max-height: 740px) {
+      .home-center {
+        top: 60px;
+        top: clamp(58px, 11vh, 84px);
+      }
+
+      .module-area,
+      .app.module-rescue .module-area {
+        top: 162px;
+        bottom: 62px;
+        bottom: calc(var(--safe-bottom) + 62px);
+        min-height: 160px;
+      }
+
+      .module-grid > .scene-card,
+      .app.module-rescue .module-grid > .scene-card {
+        min-height: 108px;
+      }
+    }
+
+    @supports (-webkit-touch-callout: none) {
+      .module-area,
+      .module-scroll,
+      .module-grid,
+      .scene-card {
+        -webkit-transform: translateZ(0);
+      }
+    }
+
+
+
+    /* === 移动端版式再优化：整体上移、标题防折行、压缩标题与小剧场距离、收束 Excerpt 区域 === */
+    @media (max-width: 900px) {
+      .home-center {
+        top: 80px;
+        top: clamp(76px, 12svh, 114px);
+        width: min(460px, 96vw);
+      }
+
+      .main-title {
+        white-space: nowrap;
+        word-break: keep-all;
+        overflow-wrap: normal;
+        font-size: clamp(30px, min(10.6vw, 7.2vh), 52px);
+        letter-spacing: 0.025em;
+        line-height: 1;
+      }
+
+      .intro {
+        margin: 10px auto 3px;
+        line-height: 1.42;
+      }
+
+      .module-area,
+      .app.module-rescue .module-area {
+        top: 162px;
+        top: clamp(150px, 22svh, 208px);
+        bottom: calc(var(--safe-bottom) + 70px);
+      }
+
+      .module-scroll,
+      .app.module-rescue .module-scroll {
+        padding-top: 2px;
+      }
+
+      .detail-view {
+        padding-top: calc(var(--safe-top) + 54px);
+      }
+
+      .editor-card {
+        gap: clamp(8px, 1.1vw, 12px);
+      }
+
+      .body-wrap {
+        gap: 6px;
+      }
+
+      .field {
+        gap: 4px;
+      }
+
+      .field label[for="summaryInput"] {
+        font-size: 9px;
+        letter-spacing: 0.16em;
+      }
+
+      .summary-input {
+        min-height: 42px;
+        padding: 2px clamp(4px, 0.7vw, 8px) 6px;
+        font-size: clamp(12px, 1.02vw, 14px);
+        line-height: 1.45;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .home-center {
+        top: 70px;
+        top: clamp(66px, 12svh, 98px);
+        width: 97vw;
+      }
+
+      .kicker {
+        margin-bottom: 3px;
+        font-size: 9px;
+        letter-spacing: 0.22em;
+      }
+
+      .kicker::before,
+      .kicker::after {
+        width: 24px;
+      }
+
+      .main-title {
+        font-size: clamp(28px, 9.2vw, 43px);
+        letter-spacing: 0.01em;
+      }
+
+      .intro {
+        margin: 8px auto 0;
+        font-size: clamp(11px, 3.2vw, 13px);
+        line-height: 1.32;
+      }
+
+      .module-area,
+      .app.module-rescue .module-area {
+        top: 138px;
+        top: clamp(132px, 21svh, 172px);
+        bottom: calc(var(--safe-bottom) + 64px);
+        min-height: 190px;
+      }
+
+      .module-grid > .scene-card,
+      .app.module-rescue .module-grid > .scene-card {
+        min-height: 122px;
+      }
+
+      .scene-card {
+        padding: 13px 14px;
+      }
+
+      .detail-view {
+        padding: calc(var(--safe-top) + 50px) 24px 26px;
+      }
+
+      .editor-card {
+        padding: 20px 16px;
+      }
+
+      .summary-input {
+        min-height: 38px;
+        font-size: 12px;
+        line-height: 1.38;
+        padding-bottom: 4px;
+      }
+    }
+
+    @media (max-width: 520px) and (max-height: 740px) {
+      .home-center {
+        top: 60px;
+        top: clamp(58px, 11svh, 84px);
+      }
+
+      .main-title {
+        font-size: clamp(27px, 8.7vw, 39px);
+      }
+
+      .intro {
+        margin-top: 6px;
+      }
+
+      .module-area,
+      .app.module-rescue .module-area {
+        top: 120px;
+        top: clamp(116px, 20svh, 150px);
+        bottom: calc(var(--safe-bottom) + 58px);
+        min-height: 170px;
+      }
+
+      .module-grid > .scene-card,
+      .app.module-rescue .module-grid > .scene-card {
+        min-height: 108px;
+      }
+    }
+    /* PC/横屏最终覆盖：防止后面的 max-height 规则把 flex 版首页标题重新偏移 */
+    @media (min-width: 901px) {
+      .home-center {
+        left: auto;
+        top: auto;
+        transform: translateY(0);
+        animation-name: homeIntroDesktop;
+      }
+    }
+
+
+
+    /* === 轻量功能层：寻笺 / 排序 / 收藏 / 置顶 / 背景音乐 === */
+    .musicbar {
+      position: absolute;
+      z-index: 30;
+      top: clamp(16px, 2.1vw, 28px);
+      left: clamp(18px, 2.4vw, 34px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .music-btn svg .music-wave,
+    .music-btn svg .music-slash {
+      transition: opacity 180ms ease;
+    }
+
+    .music-btn svg .music-slash { opacity: 1; }
+    .music-btn.is-playing svg .music-wave { opacity: 1; }
+    .music-btn.is-playing svg .music-slash { opacity: 0; }
+
+    .module-area {
+      display: grid !important;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: clamp(8px, 1.1vw, 12px);
+    }
+
+    .list-tools {
+      position: relative;
+      z-index: 25;
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(112px, 0.34fr);
+      align-items: end;
+      gap: clamp(8px, 1vw, 12px);
+      padding: 4px 4px 0;
+      pointer-events: auto;
+    }
+
+    .search-wrap,
+    .select-wrap {
+      min-width: 0;
+      display: grid;
+      gap: 4px;
+      color: var(--blue-deep);
+      font-family: var(--font-ui);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .tool-input,
+    .tool-select {
+      min-height: 34px;
+      border: 1px solid rgba(95, 139, 166, 0.22);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.66);
+      color: var(--ink);
+      box-shadow: 0 8px 18px rgba(35, 48, 58, 0.07);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      font-family: var(--font-ui);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      outline: none;
+    }
+
+    .tool-input {
+      width: 100%;
+      padding: 0 14px;
+    }
+
+    .tool-input::placeholder {
+      color: rgba(34, 36, 39, 0.38);
+    }
+
+    .tool-select {
+      width: 100%;
+      padding: 0 28px 0 12px;
+      cursor: pointer;
+    }
+
+    .module-scroll { min-height: 0; }
+
+    .scene-card {
+      cursor: pointer;
+      padding-bottom: clamp(46px, 5.4vw, 58px);
+    }
+
+    .scene-card.is-pinned {
+      border-color: rgba(95, 139, 166, 0.25);
+    }
+
+    .card-actions {
+      position: absolute !important;
+      z-index: 4 !important;
+      left: 12px;
+      bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      pointer-events: auto !important;
+    }
+
+    .card-action-btn {
+      width: 28px;
+      height: 28px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid rgba(95, 139, 166, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.68);
+      color: rgba(95, 139, 166, 0.92);
+      box-shadow: 0 6px 14px rgba(35, 48, 58, 0.07);
+      line-height: 1;
+      pointer-events: auto !important;
+      transition: transform 180ms var(--ease), background 180ms ease, color 180ms ease, border-color 180ms ease;
+    }
+
+    .card-action-btn svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .card-action-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .card-action-btn.is-on {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.90);
+      border-color: rgba(95, 139, 166, 0.34);
+    }
+
+    .fav-btn.is-on svg .star-shape,
+    .pin-btn.is-on svg .pin-head {
+      fill: currentColor;
+    }
+
+    .scene-card > .card-actions,
+    .scene-card > .card-actions * {
+      pointer-events: auto !important;
+    }
+
+    .empty-note {
+      margin: 0;
+      color: var(--soft-ink);
+      font-size: 13px;
+      line-height: 1.65;
+      letter-spacing: 0.04em;
+    }
+
+    .status {
+      display: inline-flex;
+      justify-self: end;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.58);
+      color: var(--blue-deep);
+      box-shadow: 0 8px 18px rgba(35, 48, 58, 0.07);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      font-family: var(--font-ui);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .detail-header {
+      grid-template-columns: auto 1fr auto;
+    }
+
+    .toast {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 900px) {
+      .musicbar {
+        top: 14px;
+        left: 14px;
+      }
+
+      .list-tools {
+        grid-template-columns: 1fr minmax(96px, 0.44fr);
+        gap: 7px;
+      }
+
+      .search-wrap,
+      .select-wrap {
+        font-size: 9px;
+        letter-spacing: 0.12em;
+      }
+
+      .tool-input,
+      .tool-select {
+        min-height: 32px;
+        font-size: 11px;
+      }
+
+      .module-area,
+      .app.module-rescue .module-area {
+        display: grid !important;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      .card-actions {
+        left: 10px;
+        bottom: 10px;
+      }
+
+      .card-action-btn {
+        width: 26px;
+        height: 26px;
+      }
+
+      .card-action-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .detail-header {
+        grid-template-columns: auto 1fr;
+      }
+
+      .status {
+        grid-column: 1 / -1;
+        justify-self: start;
+        margin-top: -2px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .list-tools {
+        grid-template-columns: 1fr 96px;
+      }
+
+      .tool-input,
+      .tool-select {
+        min-height: 30px;
+      }
+    }
+
+
+    /* === v2 微调：去除排序下拉箭头，并收紧标题与功能栏/模块组间距 === */
+    .tool-select {
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: none !important;
+      padding-right: 12px;
+      text-align: center;
+      text-align-last: center;
+    }
+
+    .tool-select::-ms-expand {
+      display: none;
+    }
+
+    @media (min-width: 901px) {
+      .module-area {
+        margin-top: clamp(2px, 0.55vw, 8px) !important;
+        height: min(30vh, 232px) !important;
+      }
+
+      .list-tools {
+        padding-top: 0;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .module-area,
+      .app.module-rescue .module-area {
+        top: clamp(126px, 18svh, 172px) !important;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .module-area,
+      .app.module-rescue .module-area {
+        top: clamp(122px, 18svh, 154px) !important;
+      }
+    }
+
+    @media (max-width: 520px) and (max-height: 740px) {
+      .module-area,
+      .app.module-rescue .module-area {
+        top: clamp(104px, 16.5svh, 132px) !important;
+      }
+    }
+
+
+    /* === v3 最终微调：PC/横屏模块区加高，副标题严格视觉居中 === */
+    .intro {
+      width: 100%;
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    @media (min-width: 901px) {
+      .home-inner {
+        justify-content: center;
+      }
+
+      .home-center {
+        width: min(760px, 88%);
+        margin-inline: auto;
+        text-align: center;
+      }
+
+      .module-area {
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
+        width: min(calc(100% - clamp(56px, 10vw, 148px)), 1060px) !important;
+        height: clamp(258px, 34vh, 318px) !important;
+        min-height: 258px !important;
+        margin-top: clamp(2px, 0.55vw, 8px) !important;
+        overflow: hidden;
+      }
+
+      .module-scroll {
+        height: 100%;
+        min-height: 0;
+        padding-top: 8px;
+        padding-bottom: 22px;
+      }
+
+      .module-grid > .scene-card {
+        min-height: clamp(128px, 13vw, 152px);
+      }
+    }
+
+    @media (min-width: 901px) and (max-height: 720px) {
+      .module-area {
+        height: clamp(232px, 38vh, 278px) !important;
+        min-height: 232px !important;
+      }
+
+      .module-grid > .scene-card {
+        min-height: clamp(116px, 15vh, 136px);
+      }
+    }
+
+
+    /* === v4 移动端详情页修复：统一字号，并让长正文改为页面级滚动，不再被内部 textarea 截断 === */
+    @media (max-width: 900px) {
+      .app.is-detail .detail-view {
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        padding-top: calc(var(--safe-top) + 54px);
+        padding-bottom: calc(var(--safe-bottom) + 26px);
+      }
+
+      .app.is-detail .detail-shell {
+        height: auto;
+        min-height: 100%;
+        grid-template-rows: auto auto auto;
+        align-content: start;
+        gap: 10px;
+        padding-bottom: calc(var(--safe-bottom) + 18px);
+      }
+
+      .app.is-detail .editor-card {
+        min-height: auto;
+        overflow: visible;
+        grid-template-rows: auto auto;
+        gap: 10px;
+      }
+
+      .app.is-detail .editor-top,
+      .app.is-detail .body-wrap {
+        min-height: auto;
+      }
+
+      .app.is-detail .body-wrap {
+        display: block;
+      }
+
+      .app.is-detail .body-wrap > .field {
+        margin-bottom: 8px;
+      }
+
+      .app.is-detail .scroll-editor {
+        min-height: auto;
+        overflow: visible;
+      }
+
+      .app.is-detail .title-input {
+        min-height: 46px;
+        font-size: clamp(30px, 8.6vw, 46px);
+        line-height: 1.16;
+      }
+
+      .app.is-detail .meta-input {
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .app.is-detail .summary-input {
+        min-height: 38px;
+        font-size: clamp(12px, 3.2vw, 14px);
+        line-height: 1.5;
+      }
+
+      .app.is-detail .body-input {
+        height: auto;
+        min-height: 46vh;
+        overflow: hidden;
+        padding: 12px clamp(14px, 4.2vw, 20px) 20px;
+        font-size: clamp(13px, 3.45vw, 15px);
+        line-height: 1.72;
+        letter-spacing: 0.04em;
+      }
+
+      .app.is-detail .detail-actions {
+        position: relative;
+        padding-bottom: calc(var(--safe-bottom) + 6px);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .app.is-detail .detail-view {
+        padding-left: 22px;
+        padding-right: 22px;
+      }
+
+      .app.is-detail .editor-card {
+        padding: 20px 16px;
+      }
+
+      .app.is-detail .body-input {
+        min-height: 50vh;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+    }
+
+
+    /* === v5 移动端详情页滚动修复：背景固定，正文回到容器内滚动，不截断 === */
+    @media (max-width: 900px) {
+      .app.is-detail {
+        height: var(--app-height);
+        min-height: var(--app-height);
+        overflow: hidden;
+      }
+
+      .app.is-detail .detail-view {
+        height: 100%;
+        overflow: hidden !important;
+        padding-top: calc(var(--safe-top) + 54px);
+        padding-bottom: calc(var(--safe-bottom) + 22px);
+      }
+
+      .app.is-detail .detail-shell {
+        height: 100%;
+        min-height: 0;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        align-content: stretch;
+        gap: 10px;
+        padding-bottom: 0;
+      }
+
+      .app.is-detail .editor-card {
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 10px;
+      }
+
+      .app.is-detail .editor-top,
+      .app.is-detail .body-wrap,
+      .app.is-detail .body-wrap > .field,
+      .app.is-detail .scroll-editor {
+        min-height: 0;
+      }
+
+      .app.is-detail .body-wrap {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 6px;
+      }
+
+      .app.is-detail .body-wrap > .field {
+        margin-bottom: 0;
+      }
+
+      .app.is-detail .scroll-editor {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .app.is-detail .summary-input {
+        min-height: 38px;
+        max-height: 72px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .app.is-detail .body-input {
+        height: 100% !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding: 12px clamp(14px, 4.2vw, 20px) 22px;
+        font-size: clamp(13px, 3.45vw, 15px);
+        line-height: 1.72;
+        letter-spacing: 0.04em;
+      }
+
+      .app.is-detail .detail-actions {
+        position: relative;
+        padding-bottom: calc(var(--safe-bottom) + 2px);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .app.is-detail .detail-view {
+        padding-left: 22px;
+        padding-right: 22px;
+      }
+
+      .app.is-detail .editor-card {
+        padding: 20px 16px;
+      }
+
+      .app.is-detail .body-input {
+        font-size: 13px;
+        line-height: 1.7;
+      }
+    }
+
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app" aria-label="吱吱的剧笺手札">
+    <div class="geo-bg" aria-hidden="true"></div>
+
+    <div class="decor-layer" aria-hidden="true">
+      <i class="asset hole-paper"></i>
+      <i class="asset hand-gray"></i>
+      <i class="asset hand-blue"></i>
+      <i class="asset tape-long"></i>
+      <i class="asset tape-short"></i>
+      <i class="asset note-long"></i>
+    </div>
+
+    <div class="musicbar" aria-label="背景音乐">
+      <button class="icon-action-btn music-btn" id="musicBtn" type="button" aria-label="播放背景音乐" title="背景音乐">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9.5v5h4l5 4v-13l-5 4H4z"></path>
+          <path class="music-wave" d="M16 9c1 .9 1.5 1.9 1.5 3s-.5 2.1-1.5 3"></path>
+          <path class="music-wave" d="M18.8 6.7A7.2 7.2 0 0 1 21 12a7.2 7.2 0 0 1-2.2 5.3"></path>
+          <path class="music-slash" d="M3.5 3.5l17 17"></path>
+        </svg>
+      </button>
+      <audio id="bgmAudio" preload="none" loop>
+        <source src="./assets/bgm.mp3" type="audio/mpeg" />
+      </audio>
+    </div>
+
+    <div class="topbar" aria-label="页面操作">
+      <button class="icon-action-btn" id="exportBtn" type="button" aria-label="导出 JSON" title="导出">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 4v9"></path>
+          <path d="M8.5 9.5 12 13l3.5-3.5"></path>
+          <path d="M5 16.5v2.2c0 .7.6 1.3 1.3 1.3h11.4c.7 0 1.3-.6 1.3-1.3v-2.2"></path>
+        </svg>
+      </button>
+      <button class="icon-action-btn" id="importBtn" type="button" aria-label="导入 JSON" title="导入">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 20v-9"></path>
+          <path d="M8.5 14.5 12 11l3.5 3.5"></path>
+          <path d="M5 7.5V5.3C5 4.6 5.6 4 6.3 4h11.4c.7 0 1.3.6 1.3 1.3v2.2"></path>
+        </svg>
+      </button>
+      <input class="hidden-file" id="importFile" type="file" accept="application/json,.json" />
+    </div>
+
+    <section class="view home-view is-active" id="homeView" aria-label="首页">
+      <div class="home-inner">
+        <header class="home-center">
+          <div class="kicker">Parallel World</div>
+          <h1 class="main-title" id="mainTitle">吱吱的剧笺手札</h1>
+          <p class="intro" id="mainIntro">一瞬星河 ✧ 敛作一页</p>
+        </header>
+
+        <section class="module-area" aria-label="小剧场模块列表">
+          <div class="list-tools" aria-label="小剧场检索与排列">
+            <label class="search-wrap" for="searchInput">
+              <span>寻笺</span>
+              <input class="tool-input" id="searchInput" type="search" placeholder="标题 / 类型 / 正文" autocomplete="off" />
+            </label>
+            <label class="select-wrap" for="sortSelect">
+              <span>排列</span>
+              <select class="tool-select" id="sortSelect">
+                <option value="favoriteFirst">收藏</option>
+                <option value="updatedDesc">最新</option>
+                <option value="titleAsc">名称</option>
+              </select>
+            </label>
+          </div>
+          <div class="module-scroll">
+            <div class="module-grid" id="moduleGrid"></div>
+          </div>
+        </section>
+
+        <div class="home-actions">
+          <button class="add-btn" id="addBtn" type="button">平行掠影，封存纸间</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="view detail-view" id="detailView" aria-label="小剧场详情">
+      <div class="detail-shell">
+        <header class="detail-header">
+          <button class="back-btn" id="backBtn" type="button" aria-label="返回首页">←</button>
+          <div class="detail-label">Scene Editor</div>
+          <div class="status" id="statusText">已本地保存</div>
+        </header>
+
+        <article class="editor-card">
+          <div class="editor-top">
+            <div class="field">
+              <label for="titleInput">Title</label>
+              <input class="input title-input" id="titleInput" type="text" />
+            </div>
+
+            <div class="meta-panel">
+              <div class="field">
+                <label for="typeInput">Type</label>
+                <input class="input meta-input" id="typeInput" type="text" />
+              </div>
+              <div class="field">
+                <label for="dateInput">Date</label>
+                <input class="input meta-input" id="dateInput" type="text" />
+              </div>
+            </div>
+          </div>
+
+          <div class="body-wrap">
+            <div class="field">
+              <label for="summaryInput">Excerpt</label>
+              <textarea class="textarea summary-input" id="summaryInput" rows="2"></textarea>
+            </div>
+
+            <div class="field scroll-editor">
+              <textarea class="textarea body-input" id="bodyInput"></textarea>
+            </div>
+          </div>
+        </article>
+
+        <footer class="detail-actions">
+          <button class="action-btn" id="saveBtn" type="button">保存</button>
+          <button class="action-btn copy-btn" id="copyBtn" type="button">复制</button>
+          <button class="action-btn" id="newFromDetailBtn" type="button">新增模块</button>
+          <button class="action-btn danger" id="deleteBtn" type="button">删除当前</button>
+        </footer>
+      </div>
+    </section>
+
+    <div class="save-modal" id="saveModal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="saveModalTitle">
+        <h2 class="modal-title" id="saveModalTitle">是否保存本次记录？</h2>
+        <div class="modal-actions">
+          <button class="action-btn" id="modalSaveCloseBtn" type="button">保存并返回</button>
+          <button class="action-btn" id="modalCloseBtn" type="button">直接返回</button>
+          <button class="action-btn danger" id="modalCancelBtn" type="button">继续编辑</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">已保存到本地</div>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      if (!String.prototype.padStart) {
+        String.prototype.padStart = function padStart(targetLength, padString) {
+          var source = String(this);
+          targetLength = targetLength >> 0;
+          padString = String(padString || ' ');
+          if (source.length >= targetLength) return source;
+          targetLength = targetLength - source.length;
+          while (padString.length < targetLength) padString += padString;
+          return padString.slice(0, targetLength) + source;
+        };
+      }
+
+      function setAppHeight() {
+        var height = window.innerHeight || document.documentElement.clientHeight;
+        if (height) document.documentElement.style.setProperty('--app-height', height + 'px');
+      }
+
+      setAppHeight();
+      window.addEventListener('resize', setAppHeight, false);
+      window.addEventListener('resize', function () { setTimeout(autoResizeBodyInput, 80); }, false);
+      window.addEventListener('orientationchange', function () {
+        setTimeout(setAppHeight, 260);
+        setTimeout(autoResizeBodyInput, 320);
+      }, false);
+
+      function removeNode(node) {
+        if (node && node.parentNode) node.parentNode.removeChild(node);
+      }
+
+      function isIOSLike() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      }
+
+      var STORAGE_KEY = 'zz_side_theater_parallel_world_v4';
+      var LEGACY_STORAGE_KEY = 'zz_side_theater_parallel_world_v3';
+      var OFFICIAL_SCENES_URL = './data/official-scenes.json';
+      var OFFICIAL_SOURCE = 'official';
+      var USER_SOURCE = 'user';
+      var STATUS = {
+        saved: '墨迹已干',
+        editing: '正在落墨…',
+        failed: '落墨未成，请导出备份'
+      };
+
+      function makeId() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+        return String(Date.now()) + '-' + Math.random().toString(16).slice(2);
+      }
+
+      function nowISO() {
+        return new Date().toISOString();
+      }
+
+      var defaultState = {
+        meta: {
+          title: '吱吱的剧笺手札',
+          intro: '一瞬星河 ✧ 敛作一页'
+        },
+        officialVersion: '2026-04-30-001',
+        scenes: [
+          {
+            id: 'official-rain-after-001',
+            source: OFFICIAL_SOURCE,
+            officialVersion: '2026-04-30-001',
+            title: '雨停以后',
+            type: '短篇小剧场',
+            date: '05.12',
+            summary: '雨停以后，窗纸透出一点清亮。她把伞靠在廊下，他没有催，只陪她听瓦檐滴水。',
+            body: '雨停以后，窗纸透出一点清亮。\n\n她把伞靠在廊下，水珠顺着伞骨一点一点落下去。他站在不远处，没有催，只低头替她把被风吹乱的纸页压好。\n\n那时候天色很淡，像一张还没有写完的信。',
+            pinned: true,
+            favorite: false,
+            editedLocally: false,
+            createdAt: '2026-04-30T00:00:00.000Z',
+            updatedAt: '2026-04-30T00:00:00.000Z'
+          },
+          {
+            id: 'official-eaves-wind-002',
+            source: OFFICIAL_SOURCE,
+            officialVersion: '2026-04-30-001',
+            title: '檐下风',
+            type: '迷你番外',
+            date: '05.20',
+            summary: '风从竹影里绕过来，吹乱了案上的信。他伸手按住纸角，像按住一句还没出口的话。',
+            body: '风从竹影里绕过来，吹乱了案上的信。\n\n他伸手按住纸角，像按住一句还没出口的话。她看见他的指节停在墨痕旁边，忽然觉得那一刻很轻，轻得像可以被夹进书页里。',
+            pinned: false,
+            favorite: false,
+            editedLocally: false,
+            createdAt: '2026-04-30T00:00:00.000Z',
+            updatedAt: '2026-04-30T00:00:00.000Z'
+          },
+          {
+            id: 'official-old-bookmark-003',
+            source: OFFICIAL_SOURCE,
+            officialVersion: '2026-04-30-001',
+            title: '旧书签',
+            type: '对白摘录',
+            date: '06.01',
+            summary: '书签夹在泛黄的一页里，上面只有一句：春深不语，故人自来。她看了很久。',
+            body: '书签夹在泛黄的一页里，上面只有一句：春深不语，故人自来。\n\n她看了很久，直到窗外的光慢慢移开，才把那张书签重新放回原处。像把一个名字，也轻轻放回心里。',
+            pinned: false,
+            favorite: true,
+            editedLocally: false,
+            createdAt: '2026-04-30T00:00:00.000Z',
+            updatedAt: '2026-04-30T00:00:00.000Z'
+          }
+        ]
+      };
+
+      var state = loadState();
+      var currentId = firstAvailableSceneId();
+      var saveTimer = null;
+      var hasUnsavedChanges = false;
+      var uiState = {
+        query: '',
+        sort: 'updatedDesc'
+      };
+
+      var app = document.getElementById('app');
+      var homeView = document.getElementById('homeView');
+      var detailView = document.getElementById('detailView');
+      var moduleGrid = document.getElementById('moduleGrid');
+      var mainTitle = document.getElementById('mainTitle');
+      var mainIntro = document.getElementById('mainIntro');
+      var searchInput = document.getElementById('searchInput');
+      var sortSelect = document.getElementById('sortSelect');
+      var musicBtn = document.getElementById('musicBtn');
+      var bgmAudio = document.getElementById('bgmAudio');
+      var addBtn = document.getElementById('addBtn');
+      var backBtn = document.getElementById('backBtn');
+      var saveBtn = document.getElementById('saveBtn');
+      var copyBtn = document.getElementById('copyBtn');
+      var deleteBtn = document.getElementById('deleteBtn');
+      var newFromDetailBtn = document.getElementById('newFromDetailBtn');
+      var exportBtn = document.getElementById('exportBtn');
+      var importBtn = document.getElementById('importBtn');
+      var importFile = document.getElementById('importFile');
+      var toast = document.getElementById('toast');
+      var statusText = document.getElementById('statusText');
+      var saveModal = document.getElementById('saveModal');
+      var modalSaveCloseBtn = document.getElementById('modalSaveCloseBtn');
+      var modalCloseBtn = document.getElementById('modalCloseBtn');
+      var modalCancelBtn = document.getElementById('modalCancelBtn');
+
+      var fields = {
+        title: document.getElementById('titleInput'),
+        type: document.getElementById('typeInput'),
+        date: document.getElementById('dateInput'),
+        summary: document.getElementById('summaryInput'),
+        body: document.getElementById('bodyInput')
+      };
+
+      try {
+        init();
+      } catch (error) {
+        console.error('Init failed, fallback render module cards.', error);
+        emergencyRenderCards();
+      }
+
+      function init() {
+        setAppHeight();
+        preloadLocalAssets();
+        renderMeta();
+        syncToolControls();
+        renderCards();
+        bindEvents();
+        if (currentId) fillEditor(currentId);
+        updateStatus(STATUS.saved);
+        loadOfficialScenes();
+      }
+
+      function preloadLocalAssets() {
+        var urls = [
+          './assets/1.png', './assets/2.png', './assets/3.png', './assets/4.png', './assets/5.png',
+          './assets/6.png', './assets/7.png', './assets/8.png', './assets/9.png', './assets/10.png'
+        ];
+        var failed = false;
+        var finished = 0;
+
+        function done(hasFailed) {
+          failed = failed || hasFailed;
+          finished += 1;
+          if (failed && app) app.classList.add('assets-fallback');
+          if (finished === urls.length && !failed && app) app.classList.remove('assets-fallback');
+        }
+
+        urls.forEach(function (url) {
+          var img = new Image();
+          img.onload = function () { done(false); };
+          img.onerror = function () { done(true); };
+          img.src = url;
+        });
+      }
+
+      function bindEvents() {
+        if (searchInput) {
+          searchInput.oninput = function () {
+            uiState.query = searchInput.value || '';
+            renderCards();
+          };
+        }
+
+        if (sortSelect) {
+          sortSelect.onchange = function () {
+            uiState.sort = sortSelect.value || 'updatedDesc';
+            renderCards();
+          };
+        }
+
+        if (musicBtn && bgmAudio) {
+          musicBtn.onclick = toggleMusic;
+          bgmAudio.onended = function () { updateMusicButton(false); };
+          bgmAudio.onerror = function () { updateMusicButton(false); };
+        }
+
+        addBtn.onclick = function () {
+          var scene = createScene();
+          state.scenes.unshift(scene);
+          currentId = scene.id;
+          commitSave('新笺已收入纸间');
+          renderCards();
+          openDetail(scene.id);
+        };
+
+        newFromDetailBtn.onclick = function () {
+          var scene = createScene();
+          state.scenes.unshift(scene);
+          currentId = scene.id;
+          fillEditor(scene.id);
+          commitSave('新笺已收入纸间');
+          renderCards();
+        };
+
+        backBtn.onclick = requestCloseDetail;
+        saveBtn.onclick = function () { commitSave('墨迹已干'); };
+        copyBtn.onclick = copyCurrentBody;
+        modalSaveCloseBtn.onclick = function () {
+          commitSave('墨迹已干');
+          hideSavePrompt();
+          closeDetail();
+        };
+        modalCloseBtn.onclick = function () {
+          hideSavePrompt();
+          closeDetail();
+        };
+        modalCancelBtn.onclick = hideSavePrompt;
+        saveModal.onclick = function (event) {
+          if (event.target === saveModal) hideSavePrompt();
+        };
+
+        deleteBtn.onclick = function () {
+          if (!currentId) return;
+          var scene = getScene(currentId);
+          if (!scene) return;
+          if (!window.confirm('确认删除当前小剧场吗？此操作只会删除本地缓存中的这一条。')) return;
+          if (scene.source === OFFICIAL_SOURCE) {
+            scene.deletedAt = nowISO();
+            scene.editedLocally = true;
+            scene.updatedAt = nowISO();
+          } else {
+            state.scenes = state.scenes.filter(function (item) { return item.id !== scene.id; });
+          }
+          currentId = firstAvailableSceneId();
+          commitSave('已删除');
+          closeDetail();
+        };
+
+        Object.keys(fields).forEach(function (key) {
+          var el = fields[key];
+          el.oninput = function () {
+            updateCurrentScene(key, el.value);
+            if (key === 'body') autoResizeBodyInput();
+            hasUnsavedChanges = true;
+            renderCards();
+            queueSave();
+          };
+        });
+
+        exportBtn.onclick = exportJSON;
+        importBtn.onclick = function () { importFile.value = ''; importFile.click(); };
+        importFile.onchange = importJSON;
+
+        window.addEventListener('keydown', function (event) {
+          var key = String(event.key || '').toLowerCase();
+          if ((event.ctrlKey || event.metaKey) && key === 's') {
+            event.preventDefault();
+            commitSave('墨迹已干');
+          }
+          if (event.key === 'Escape' && app.classList.contains('is-detail')) requestCloseDetail();
+        });
+
+        window.addEventListener('beforeunload', function (event) {
+          if (!hasUnsavedChanges) return;
+          try { saveStateSilent(); } catch (error) {}
+          event.preventDefault();
+          event.returnValue = '';
+        });
+      }
+
+      function renderMeta() {
+        mainTitle.textContent = defaultState.meta.title;
+        mainIntro.textContent = defaultState.meta.intro;
+      }
+
+      function renderCards() {
+        if (!moduleGrid) return;
+        moduleGrid.innerHTML = '';
+        var scenes = getVisibleScenes();
+        var fragment = document.createDocumentFragment();
+
+        if (!scenes.length) {
+          renderEmptyCard(moduleGrid);
+          return;
+        }
+
+        scenes.forEach(function (scene, index) {
+          var card = document.createElement('article');
+          card.className = 'scene-card' + (scene.pinned ? ' is-pinned' : '') + (scene.favorite ? ' is-favorite' : '');
+          card.setAttribute('data-count', twoDigits(index + 1));
+          card.setAttribute('tabindex', '0');
+          card.setAttribute('role', 'button');
+          card.setAttribute('aria-label', '打开小剧场：' + (scene.title || '未命名小剧场'));
+
+          card.innerHTML =
+            '<div class="card-actions">' +
+              '<button class="card-action-btn fav-btn' + (scene.favorite ? ' is-on' : '') + '" type="button" title="收藏" aria-label="收藏" aria-pressed="' + String(!!scene.favorite) + '">' + favoriteIcon(scene.favorite) + '</button>' +
+              '<button class="card-action-btn pin-btn' + (scene.pinned ? ' is-on' : '') + '" type="button" title="置顶" aria-label="置顶" aria-pressed="' + String(!!scene.pinned) + '">' + pinIcon(scene.pinned) + '</button>' +
+            '</div>' +
+            '<div class="scene-meta-line"><span>' + escapeHTML(scene.type || '未分类') + '</span><span>' + escapeHTML(scene.date || '') + '</span></div>' +
+            '<h2>' + escapeHTML(scene.title || '未命名小剧场') + '</h2>' +
+            '<p>' + escapeHTML(scene.summary || scene.body || '点击进入，写下一段新的平行小剧场。') + '</p>';
+
+          card.onclick = function () { openDetail(scene.id); };
+          card.onkeydown = function (event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              openDetail(scene.id);
+            }
+          };
+
+          var pinBtn = card.querySelector('.pin-btn');
+          var favBtn = card.querySelector('.fav-btn');
+
+          if (pinBtn) {
+            pinBtn.onclick = function (event) {
+              event.stopPropagation();
+              toggleSceneFlag(scene.id, 'pinned');
+            };
+          }
+          if (favBtn) {
+            favBtn.onclick = function (event) {
+              event.stopPropagation();
+              toggleSceneFlag(scene.id, 'favorite');
+            };
+          }
+
+          fragment.appendChild(card);
+        });
+
+        moduleGrid.appendChild(fragment);
+        if (moduleGrid.children.length === 0) emergencyRenderCards();
+      }
+
+      function renderEmptyCard(grid) {
+        var card = document.createElement('article');
+        card.className = 'scene-card';
+        card.setAttribute('data-count', '+');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+
+        if ((uiState.query || '').trim()) {
+          card.innerHTML =
+            '<div class="scene-meta-line"><span>Search</span><span>None</span></div>' +
+            '<h2>没有找到对应纸笺</h2>' +
+            '<p class="empty-note">可以换一个关键词，或清空“寻笺”重新查看。</p>';
+          card.onclick = function () {
+            uiState.query = '';
+            syncToolControls();
+            renderCards();
+          };
+        } else {
+          card.innerHTML =
+            '<div class="scene-meta-line"><span>New Scene</span><span>Now</span></div>' +
+            '<h2>暂无小剧场</h2>' +
+            '<p>点击这里，新增一段平行小剧场。</p>';
+          card.onclick = function () {
+            var scene = createScene();
+            state.scenes.unshift(scene);
+            currentId = scene.id;
+            commitSave('新笺已收入纸间');
+            renderCards();
+            openDetail(scene.id);
+          };
+        }
+        grid.appendChild(card);
+      }
+
+      function getVisibleScenes() {
+        var query = normalizeKeyword(uiState.query);
+        var scenes = state.scenes.filter(function (scene) {
+          if (scene.deletedAt) return false;
+          if (!query) return true;
+          return normalizeKeyword([scene.title, scene.type, scene.date, scene.summary, scene.body].join(' ')).indexOf(query) !== -1;
+        });
+
+        scenes.sort(function (a, b) {
+          if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+          if (uiState.sort === 'favoriteFirst') {
+            if (!!a.favorite !== !!b.favorite) return a.favorite ? -1 : 1;
+            return compareTime(b.updatedAt, a.updatedAt);
+          }
+          if (uiState.sort === 'titleAsc') return compareText(a.title, b.title) || compareTime(b.updatedAt, a.updatedAt);
+          return compareTime(b.updatedAt, a.updatedAt);
+        });
+
+        return scenes;
+      }
+
+      function syncToolControls() {
+        if (searchInput) searchInput.value = uiState.query || '';
+        if (sortSelect) sortSelect.value = uiState.sort || 'updatedDesc';
+      }
+
+      function favoriteIcon(active) {
+        return '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon class="star-shape" points="12 3.8 14.6 9.1 20.5 10 16.2 14.1 17.2 20 12 17.2 6.8 20 7.8 14.1 3.5 10 9.4 9.1 12 3.8"></polygon></svg>';
+      }
+
+      function pinIcon(active) {
+        return '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="pin-head" d="M9 4h6l-1 5 4 4v2H6v-2l4-4-1-5z"></path><path d="M12 15v5"></path></svg>';
+      }
+
+      function toggleMusic() {
+        if (!bgmAudio) return;
+        if (!bgmAudio.paused) {
+          bgmAudio.pause();
+          updateMusicButton(false);
+          showToast('背景音乐已暂停');
+          return;
+        }
+        var playPromise = bgmAudio.play();
+        if (playPromise && typeof playPromise.then === 'function') {
+          playPromise.then(function () {
+            updateMusicButton(true);
+            showToast('背景音乐已开启');
+          }).catch(function () {
+            updateMusicButton(false);
+            showToast('未找到背景音乐文件');
+          });
+        } else {
+          updateMusicButton(true);
+          showToast('背景音乐已开启');
+        }
+      }
+
+      function updateMusicButton(isPlaying) {
+        if (!musicBtn) return;
+        musicBtn.classList.toggle('is-playing', !!isPlaying);
+        musicBtn.setAttribute('aria-label', isPlaying ? '暂停背景音乐' : '播放背景音乐');
+        musicBtn.setAttribute('title', isPlaying ? '暂停背景音乐' : '背景音乐');
+      }
+
+      function twoDigits(value) {
+        value = String(value);
+        return value.length < 2 ? '0' + value : value;
+      }
+
+      function emergencyRenderCards() {
+        var grid = document.getElementById('moduleGrid');
+        if (!grid) return;
+        var rescueApp = document.getElementById('app');
+        var scenes = defaultState && defaultState.scenes ? defaultState.scenes : [];
+        grid.innerHTML = '';
+        for (var i = 0; i < scenes.length; i += 1) {
+          var scene = normalizeScene(scenes[i]);
+          var card = document.createElement('article');
+          card.className = 'scene-card';
+          card.setAttribute('data-count', twoDigits(i + 1));
+          card.innerHTML =
+            '<div class="scene-meta-line"><span>' + escapeHTML(scene.type || '未分类') + '</span><span>' + escapeHTML(scene.date || '') + '</span></div>' +
+            '<h2>' + escapeHTML(scene.title || '未命名小剧场') + '</h2>' +
+            '<p>' + escapeHTML(scene.summary || scene.body || '点击进入，写下一段新的平行小剧场。') + '</p>';
+          grid.appendChild(card);
+        }
+        if (rescueApp && rescueApp.className.indexOf('module-rescue') === -1) rescueApp.className += ' module-rescue';
+      }
+
+      function openDetail(id) {
+        var scene = getScene(id);
+        if (!scene || scene.deletedAt) return;
+        currentId = id;
+        fillEditor(id);
+        app.classList.add('is-detail');
+        homeView.classList.remove('is-active');
+        detailView.classList.add('is-active');
+        setTimeout(autoResizeBodyInput, 40);
+      }
+
+      function requestCloseDetail() {
+        if (hasUnsavedChanges) {
+          showSavePrompt();
+          return;
+        }
+        closeDetail();
+      }
+
+      function showSavePrompt() {
+        saveModal.classList.add('show');
+        saveModal.setAttribute('aria-hidden', 'false');
+      }
+
+      function hideSavePrompt() {
+        saveModal.classList.remove('show');
+        saveModal.setAttribute('aria-hidden', 'true');
+      }
+
+      function closeDetail() {
+        app.classList.remove('is-detail');
+        detailView.classList.remove('is-active');
+        homeView.classList.add('is-active');
+        renderCards();
+      }
+
+      function copyCurrentBody() {
+        var scene = getScene(currentId);
+        var text = scene && scene.body ? scene.body : fields.body.value || '';
+        if (!text.trim()) {
+          showToast('正文为空');
+          return;
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            showToast('已复制');
+          }).catch(function () {
+            fallbackCopy(text);
+          });
+        } else {
+          fallbackCopy(text);
+        }
+      }
+
+      function fallbackCopy(text) {
+        var temp = document.createElement('textarea');
+        temp.value = text;
+        temp.setAttribute('readonly', '');
+        temp.style.position = 'fixed';
+        temp.style.left = '0';
+        temp.style.top = '0';
+        temp.style.width = '1px';
+        temp.style.height = '1px';
+        temp.style.opacity = '0';
+        temp.style.fontSize = '16px';
+        document.body.appendChild(temp);
+        temp.focus();
+        temp.select();
+        try { temp.setSelectionRange(0, temp.value.length); } catch (error) {}
+        try {
+          document.execCommand('copy');
+          showToast('已复制');
+        } catch (error) {
+          showToast('复制失败，请手动复制');
+        }
+        removeNode(temp);
+      }
+
+
+      function isMobileDetailLayout() {
+        return !!(window.matchMedia && window.matchMedia('(max-width: 900px)').matches);
+      }
+
+      function autoResizeBodyInput() {
+        if (!fields || !fields.body) return;
+
+        /* v5：详情页恢复为容器内部滚动。
+           不再给正文 textarea 写入 scrollHeight 高度，避免移动端背景和外层容器被长正文撑开。 */
+        fields.body.style.height = '';
+        fields.body.style.overflowY = '';
+      }
+
+      function fillEditor(id) {
+        var scene = getScene(id);
+        if (!scene) return;
+        fields.title.value = scene.title || '';
+        fields.type.value = scene.type || '';
+        fields.date.value = scene.date || '';
+        fields.summary.value = scene.summary || '';
+        fields.body.value = scene.body || '';
+        autoResizeBodyInput();
+        updateStatus(STATUS.saved);
+      }
+
+      function updateCurrentScene(key, value) {
+        var scene = getScene(currentId);
+        if (!scene || scene.deletedAt) return;
+        scene[key] = value;
+        if (scene.source === OFFICIAL_SOURCE) scene.editedLocally = true;
+        scene.updatedAt = nowISO();
+        updateStatus(STATUS.editing);
+      }
+
+      function toggleSceneFlag(id, key) {
+        var scene = getScene(id);
+        if (!scene || scene.deletedAt) return;
+        scene[key] = !scene[key];
+        scene.updatedAt = nowISO();
+        commitSave(key === 'pinned' ? (scene[key] ? '已置顶' : '已取消置顶') : (scene[key] ? '已收藏' : '已取消收藏'));
+        renderCards();
+      }
+
+      function getScene(id) {
+        for (var i = 0; i < state.scenes.length; i++) {
+          if (state.scenes[i].id === id) return state.scenes[i];
+        }
+        return null;
+      }
+
+      function firstAvailableSceneId() {
+        if (!state || !Array.isArray(state.scenes)) return null;
+        for (var i = 0; i < state.scenes.length; i += 1) {
+          if (!state.scenes[i].deletedAt) return state.scenes[i].id;
+        }
+        return state.scenes.length ? state.scenes[0].id : null;
+      }
+
+      function createScene() {
+        var now = new Date();
+        var month = String(now.getMonth() + 1).padStart(2, '0');
+        var day = String(now.getDate()).padStart(2, '0');
+        var createdAt = now.toISOString();
+        return {
+          id: makeId(),
+          source: USER_SOURCE,
+          officialVersion: '',
+          editedLocally: true,
+          title: '未命名小剧场',
+          type: '新收录',
+          date: month + '.' + day,
+          summary: '',
+          body: '在这里写下一段新的平行小剧场。',
+          favorite: false,
+          pinned: false,
+          deletedAt: null,
+          createdAt: createdAt,
+          updatedAt: createdAt
+        };
+      }
+
+      function queueSave() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(function () { commitSave('墨迹已干', false); }, 520);
+      }
+
+      function commitSave(message, show) {
+        if (message === undefined) message = '墨迹已干';
+        if (show === undefined) show = true;
+        try {
+          saveStateSilent();
+          updateStatus(STATUS.saved);
+          hasUnsavedChanges = false;
+          if (show) showToast(message);
+        } catch (error) {
+          console.error(error);
+          updateStatus(STATUS.failed);
+          showToast('本地保存失败，请导出备份');
+        }
+      }
+
+      function saveStateSilent() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          meta: Object.assign({}, defaultState.meta),
+          officialVersion: state.officialVersion || defaultState.officialVersion || '',
+          officialSyncedAt: state.officialSyncedAt || '',
+          scenes: (state.scenes || []).map(normalizeScene)
+        }));
+      }
+
+      function loadState() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+          if (!raw) return cloneWithDefaults(defaultState);
+          var parsed = JSON.parse(raw);
+          var scenes = Array.isArray(parsed) ? parsed : parsed.scenes;
+          if (!Array.isArray(scenes)) throw new Error('Invalid data');
+          return {
+            meta: Object.assign({}, defaultState.meta),
+            officialVersion: parsed.officialVersion || defaultState.officialVersion || '',
+            officialSyncedAt: parsed.officialSyncedAt || '',
+            scenes: scenes.map(normalizeScene)
+          };
+        } catch (error) {
+          console.warn('Load failed, use default state.', error);
+          return cloneWithDefaults(defaultState);
+        }
+      }
+
+      function cloneWithDefaults(value) {
+        return {
+          meta: Object.assign({}, defaultState.meta),
+          officialVersion: value.officialVersion || defaultState.officialVersion || '',
+          officialSyncedAt: '',
+          scenes: (value.scenes || []).map(normalizeScene)
+        };
+      }
+
+      function normalizeScene(item) {
+        item = item || {};
+        var stamp = item.createdAt || item.updatedAt || nowISO();
+        var source = item.source === OFFICIAL_SOURCE ? OFFICIAL_SOURCE : USER_SOURCE;
+        return {
+          id: item.id || makeId(),
+          source: source,
+          officialVersion: item.officialVersion || '',
+          title: item.title || '未命名小剧场',
+          type: item.type || '未分类',
+          date: item.date || '',
+          summary: item.summary || '',
+          body: item.body || '',
+          favorite: !!item.favorite,
+          pinned: !!item.pinned,
+          deletedAt: item.deletedAt || null,
+          editedLocally: !!item.editedLocally,
+          createdAt: item.createdAt || stamp,
+          updatedAt: item.updatedAt || stamp
+        };
+      }
+
+      function loadOfficialScenes() {
+        if (!window.fetch) return;
+        var separator = OFFICIAL_SCENES_URL.indexOf('?') === -1 ? '?' : '&';
+        fetch(OFFICIAL_SCENES_URL + separator + 't=' + Date.now(), { cache: 'no-store' })
+          .then(function (response) {
+            if (!response.ok) throw new Error('Official scenes unavailable');
+            return response.json();
+          })
+          .then(function (data) {
+            if (!data || !Array.isArray(data.scenes)) throw new Error('Invalid official scenes');
+            mergeOfficialScenes(data);
+            currentId = currentId || firstAvailableSceneId();
+            renderCards();
+            if (currentId && app.classList.contains('is-detail')) fillEditor(currentId);
+            commitSave('作者纸笺已同步', false);
+          })
+          .catch(function (error) {
+            console.warn('Official scenes sync skipped.', error);
+          });
+      }
+
+      function mergeOfficialScenes(data) {
+        var version = String(data.version || data.presetVersion || defaultState.officialVersion || '');
+        var existingById = {};
+        var next = [];
+        var officialIds = {};
+
+        (state.scenes || []).forEach(function (scene) {
+          if (scene && scene.id) existingById[scene.id] = normalizeScene(scene);
+        });
+
+        data.scenes.forEach(function (item) {
+          var official = normalizeScene(Object.assign({}, item, {
+            id: item.id || makeId(),
+            source: OFFICIAL_SOURCE,
+            officialVersion: version,
+            editedLocally: false
+          }));
+          officialIds[official.id] = true;
+
+          var local = existingById[official.id];
+          if (local && local.source === OFFICIAL_SOURCE && local.editedLocally) {
+            local.officialVersion = version;
+            next.push(local);
+            return;
+          }
+
+          if (local) {
+            official.favorite = !!local.favorite;
+            official.pinned = !!local.pinned;
+            official.deletedAt = local.source === OFFICIAL_SOURCE ? local.deletedAt : null;
+            official.createdAt = local.createdAt || official.createdAt;
+          }
+
+          next.push(official);
+        });
+
+        (state.scenes || []).forEach(function (scene) {
+          scene = normalizeScene(scene);
+          if (officialIds[scene.id]) return;
+          if (scene.source === OFFICIAL_SOURCE && !scene.editedLocally) return;
+          if (scene.source === OFFICIAL_SOURCE && scene.editedLocally) scene.source = USER_SOURCE;
+          next.push(scene);
+        });
+
+        state.officialVersion = version;
+        state.officialSyncedAt = nowISO();
+        state.scenes = next.map(normalizeScene);
+      }
+
+      function exportJSON() {
+        var data = JSON.stringify(state, null, 2);
+        var blob = new Blob([data], { type: 'application/json;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var date = new Date().toISOString().slice(0, 10);
+        var filename = 'zhizhi-theater-backup-' + date + '.json';
+
+        if (isIOSLike()) {
+          var opened = window.open(url, '_blank');
+          if (!opened) window.location.href = url;
+          showToast('iOS 已打开备份，请用分享保存');
+          setTimeout(function () { URL.revokeObjectURL(url); }, 6000);
+          return;
+        }
+
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        removeNode(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1200);
+        showToast('JSON 已导出');
+      }
+
+      function importJSON(event) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            var parsed = JSON.parse(String(reader.result));
+            var scenes = Array.isArray(parsed) ? parsed : parsed.scenes;
+            if (!Array.isArray(scenes)) throw new Error('Invalid JSON');
+
+            var shouldReplace = window.confirm('导入后将替换当前本地内容。建议先导出现有 JSON 备份。确认继续吗？');
+            if (!shouldReplace) return;
+
+            state = {
+              meta: Object.assign({}, defaultState.meta),
+              officialVersion: parsed.officialVersion || state.officialVersion || defaultState.officialVersion || '',
+              officialSyncedAt: state.officialSyncedAt || '',
+              scenes: scenes.map(normalizeScene)
+            };
+            currentId = firstAvailableSceneId();
+            uiState.query = '';
+            uiState.sort = 'updatedDesc';
+            syncToolControls();
+            renderMeta();
+            renderCards();
+            if (currentId) fillEditor(currentId);
+            commitSave('JSON 已导入并保存');
+          } catch (error) {
+            console.error(error);
+            showToast('导入失败，请检查 JSON 格式');
+          } finally {
+            importFile.value = '';
+          }
+        };
+        reader.readAsText(file, 'utf-8');
+      }
+
+      function updateStatus(text) {
+        if (statusText) statusText.textContent = text;
+      }
+
+      function showToast(message, actionLabel, action) {
+        clearTimeout(showToast.timer);
+        toast.innerHTML = '';
+        var textNode = document.createElement('span');
+        textNode.textContent = message;
+        toast.appendChild(textNode);
+        if (actionLabel && typeof action === 'function') {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'toast-action';
+          btn.textContent = actionLabel;
+          btn.onclick = function (event) {
+            event.stopPropagation();
+            toast.classList.remove('show');
+            action();
+          };
+          toast.appendChild(btn);
+          showToast.timer = setTimeout(function () { toast.classList.remove('show'); }, 4200);
+        } else {
+          showToast.timer = setTimeout(function () { toast.classList.remove('show'); }, 1500);
+        }
+        toast.classList.add('show');
+      }
+
+      function normalizeKeyword(value) {
+        return String(value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      }
+
+      function compareTime(a, b) {
+        return new Date(a || 0).getTime() - new Date(b || 0).getTime();
+      }
+
+      function compareText(a, b) {
+        return String(a || '').localeCompare(String(b || ''), 'zh-Hans-CN');
+      }
+
+      function formatShortDate(value) {
+        if (!value) return '';
+        var date = new Date(value);
+        if (isNaN(date.getTime())) return '';
+        return String(date.getMonth() + 1).padStart(2, '0') + '.' + String(date.getDate()).padStart(2, '0');
+      }
+
+      function escapeHTML(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+    })();
+  </script>
+</body>
+</html>
